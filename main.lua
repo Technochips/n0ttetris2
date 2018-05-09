@@ -103,10 +103,10 @@ function love.load()
 	gameover2 = love.audio.newSource( "sounds/gameover2.ogg", "stream")
 	pausesound = love.audio.newSource( "sounds/pause.ogg", "stream")
 	highscorebeep = love.audio.newSource( "sounds/highscorebeep.ogg", "stream")
+	portalenter = love.audio.newSource("sounds/portalenter.ogg", "stream")
+	portalfizzle = love.audio.newSource("sounds/portalfizzle.ogg", "stream")
 	newlevel = love.audio.newSource( "sounds/newlevel.ogg", "stream")
 	newlevel:setVolume( 0.6 )
-	portalenter = love.audio.newSource("sounds/portalenter.ogg")
-	portalfizzle = love.audio.newSource("sounds/portalfizzle.ogg")
 	
 	changevolume(volume)
 	

@@ -38,10 +38,10 @@ function gameA_load()
 	wallshapes[1] = love.physics.newPolygonShape( wallbodies,352,-64, 352,672, 384,672, 384,-64)
 	wallshapes[1]:setData({"right"})
 	wallshapes[1]:setFriction(0.00001)
-	wallshapes[2] = love.physics.newPolygonShape( wallbodies,24,640, 24,672, 352,672, 352,640)
+	--[[wallshapes[2] = love.physics.newPolygonShape( wallbodies,24,640, 24,672, 352,672, 352,640)
 	wallshapes[2]:setData({"ground"})
 	wallshapes[3] = love.physics.newPolygonShape( wallbodies,-8,-96, 384,-96, 384,-64, -8,-64)
-	wallshapes[3]:setData({"ceiling"})
+	wallshapes[3]:setData({"ceiling"})]]
 	
 	world:setCallbacks(collideA)
 	-----------
@@ -146,16 +146,27 @@ function gameA_draw()
 	end
 	---------------
 	--tetrishapes--
+	
+	
+	
+	
+	
+	
+	
 	if cuttingtimer == lineclearduration then
-		for i,v in pairs(tetribodies) do
-			if pause == false then
+		if pause == false then
+			for i,v in pairs(tetribodies) do
 				love.graphics.draw( tetriimages[i], v:getX()*physicsscale, v:getY()*physicsscale, v:getAngle(), 1, 1, piececenter[tetrikind[i]][1]*scale, piececenter[tetrikind[i]][2]*scale)
+				love.graphics.draw( tetriimages[i], v:getX()*physicsscale, (v:getY()*physicsscale)+(128*scale), v:getAngle(), 1, 1, piececenter[tetrikind[i]][1]*scale, piececenter[tetrikind[i]][2]*scale)
+				love.graphics.draw( tetriimages[i], v:getX()*physicsscale, (v:getY()*physicsscale)-(128*scale), v:getAngle(), 1, 1, piececenter[tetrikind[i]][1]*scale, piececenter[tetrikind[i]][2]*scale)
 			end
 		end
 	else
-		for i = 1, #tetricutimg do
-			if pause == false then
+		if pause == false then
+			for i = 1, #tetricutimg do
 				love.graphics.draw( tetricutimg[i], tetricutpos[i*2-1]*physicsscale, tetricutpos[i*2]*physicsscale, tetricutang[i], 1, 1, piececenter[tetricutkind[i]][1]*scale, piececenter[tetricutkind[i]][2]*scale)
+				love.graphics.draw( tetricutimg[i], tetricutpos[i*2-1]*physicsscale, (tetricutpos[i*2]*physicsscale)+(128*scale), tetricutang[i], 1, 1, piececenter[tetricutkind[i]][1]*scale, piececenter[tetricutkind[i]][2]*scale)
+				love.graphics.draw( tetricutimg[i], tetricutpos[i*2-1]*physicsscale, (tetricutpos[i*2]*physicsscale)-(128*scale), tetricutang[i], 1, 1, piececenter[tetricutkind[i]][1]*scale, piececenter[tetricutkind[i]][2]*scale)
 			end
 		end
 		
@@ -281,6 +292,19 @@ function gameA_draw()
 end
 
 function gameA_update(dt)
+	--PORTAL TELEPORTATION
+	for i, v in pairs(tetribodies) do
+		if v:getY() > 512 then
+			v:setY(v:getY() - 512)
+			love.audio.stop(portalenter)
+			love.audio.play(portalenter)
+		elseif v:getY() < 0 then
+			v:setY(v:getY() + 512)
+			love.audio.stop(portalenter)
+			love.audio.play(portalenter)
+		end
+	end
+	
 	--NEXTPIECE ROTATION (rotating allday erryday)
 	if cuttingtimer == lineclearduration then
 		nextpiecerot = nextpiecerot + nextpiecerotspeed*dt
@@ -1176,10 +1200,10 @@ function collideA(a, b, coll) --box2d callback. calls endblock.
 					love.audio.stop(portalfizzle)
 					love.audio.play(portalfizzle)
 				
-					if wallshapes[2] then
+					--[[if wallshapes[2] then
 						wallshapes[2]:destroy()
 						wallshapes[2] = nil
-					end
+					end]]
 				else
 					tetrikind[highestbody()+1] = tetrikind[1]
 					
