@@ -1,6 +1,11 @@
 function gameA_load()
 	gamestate = "gameA"
 	
+	love.audio.stop(portal1open)
+	love.audio.play(portal1open)
+	love.audio.stop(portal2open)
+	love.audio.play(portal2open)
+	
 	pause = false
 	skipupdate = true
 	
@@ -18,6 +23,8 @@ function gameA_load()
 	densityupdatetimer = 0
 	nextpiecerot = 0
 	newlevelbeep = false
+	
+	hm = true
 	
 	--PHYSICS--
 	meter = 30
@@ -139,34 +146,37 @@ function gameA_draw()
 	end
 	
 	--background--
-	if gamestate ~= "failingA" then
-		love.graphics.draw(gamebackgroundcutoff, 0, 0, 0, scale, scale)
-	else
+	if pause or gamestate == "failingA" or not hm then
 		love.graphics.draw(gamebackgroundcutoffportalless, 0, 0, 0, scale, scale)
+	else
+		love.graphics.draw(gamebackgroundcutoff, 0, 0, 0, scale, scale)
 	end
 	---------------
 	--tetrishapes--
-	
-	
-	
-	
-	
 	
 	
 	if cuttingtimer == lineclearduration then
 		if pause == false then
 			for i,v in pairs(tetribodies) do
 				love.graphics.draw( tetriimages[i], v:getX()*physicsscale, v:getY()*physicsscale, v:getAngle(), 1, 1, piececenter[tetrikind[i]][1]*scale, piececenter[tetrikind[i]][2]*scale)
-				love.graphics.draw( tetriimages[i], v:getX()*physicsscale, (v:getY()*physicsscale)+(128*scale), v:getAngle(), 1, 1, piececenter[tetrikind[i]][1]*scale, piececenter[tetrikind[i]][2]*scale)
-				love.graphics.draw( tetriimages[i], v:getX()*physicsscale, (v:getY()*physicsscale)-(128*scale), v:getAngle(), 1, 1, piececenter[tetrikind[i]][1]*scale, piececenter[tetrikind[i]][2]*scale)
+				if hm and gamestate ~= "failingA" then
+					if v:getY() >= 0 then
+						love.graphics.draw( tetriimages[i], v:getX()*physicsscale, (v:getY()*physicsscale)+(128*scale), v:getAngle(), 1, 1, piececenter[tetrikind[i]][1]*scale, piececenter[tetrikind[i]][2]*scale)
+					end
+					love.graphics.draw( tetriimages[i], v:getX()*physicsscale, (v:getY()*physicsscale)-(128*scale), v:getAngle(), 1, 1, piececenter[tetrikind[i]][1]*scale, piececenter[tetrikind[i]][2]*scale)
+				end
 			end
 		end
 	else
 		if pause == false then
 			for i = 1, #tetricutimg do
 				love.graphics.draw( tetricutimg[i], tetricutpos[i*2-1]*physicsscale, tetricutpos[i*2]*physicsscale, tetricutang[i], 1, 1, piececenter[tetricutkind[i]][1]*scale, piececenter[tetricutkind[i]][2]*scale)
-				love.graphics.draw( tetricutimg[i], tetricutpos[i*2-1]*physicsscale, (tetricutpos[i*2]*physicsscale)+(128*scale), tetricutang[i], 1, 1, piececenter[tetricutkind[i]][1]*scale, piececenter[tetricutkind[i]][2]*scale)
-				love.graphics.draw( tetricutimg[i], tetricutpos[i*2-1]*physicsscale, (tetricutpos[i*2]*physicsscale)-(128*scale), tetricutang[i], 1, 1, piececenter[tetricutkind[i]][1]*scale, piececenter[tetricutkind[i]][2]*scale)
+				if hm and gamestate ~= "failingA"  then
+					if v:getY() >= 0 then
+						love.graphics.draw( tetricutimg[i], tetricutpos[i*2-1]*physicsscale, (tetricutpos[i*2]*physicsscale)+(128*scale), tetricutang[i], 1, 1, piececenter[tetricutkind[i]][1]*scale, piececenter[tetricutkind[i]][2]*scale)
+					end
+					love.graphics.draw( tetricutimg[i], tetricutpos[i*2-1]*physicsscale, (tetricutpos[i*2]*physicsscale)-(128*scale), tetricutang[i], 1, 1, piececenter[tetricutkind[i]][1]*scale, piececenter[tetricutkind[i]][2]*scale)
+				end
 			end
 		end
 		
@@ -293,15 +303,17 @@ end
 
 function gameA_update(dt)
 	--PORTAL TELEPORTATION
-	for i, v in pairs(tetribodies) do
-		if v:getY() > 512 then
-			v:setY(v:getY() - 512)
-			love.audio.stop(portalenter)
-			love.audio.play(portalenter)
-		elseif v:getY() < 0 then
-			v:setY(v:getY() + 512)
-			love.audio.stop(portalenter)
-			love.audio.play(portalenter)
+	if gamestate ~= "failingA" and hm then
+		for i, v in pairs(tetribodies) do
+			if v:getY() > 512 then
+				v:setY(v:getY() - 512)
+				love.audio.stop(portalenter)
+				love.audio.play(portalenter)
+			elseif v:getY() < 0 then
+				v:setY(v:getY() + 512)
+				love.audio.stop(portalenter)
+				love.audio.play(portalenter)
+			end
 		end
 	end
 	
@@ -1071,6 +1083,8 @@ function largeenough(coords) --checks if a polygon is good enough for box2d's sn
 	local centroids = {}
 
 	local anchorX = coords[1]
+		----------------
+		--start--
 	local anchorY = coords[2]
 
 	local firstX = coords[3]
@@ -1197,13 +1211,15 @@ function collideA(a, b, coll) --box2d callback. calls endblock.
 					end
 					love.audio.stop(gameover1)
 					love.audio.play(gameover1)
-					love.audio.stop(portalfizzle)
-					love.audio.play(portalfizzle)
+					if hm then
+						love.audio.stop(portalfizzle)
+						love.audio.play(portalfizzle)
+					end
 				
-					--[[if wallshapes[2] then
+					if wallshapes[2] then
 						wallshapes[2]:destroy()
 						wallshapes[2] = nil
-					end]]
+					end
 				else
 					tetrikind[highestbody()+1] = tetrikind[1]
 					

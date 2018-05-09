@@ -9,6 +9,7 @@ controls.settings["return"] = {"key", {"return"}}
 controls.settings.escape = {"key", {"escape"}}
 controls.settings.rotateleft = {"key", {"y", "z", "w"}}
 controls.settings.rotateright = {"key", {"x"}}
+controls.settings.hm = {"key", {"p"}}
 
 --player 2
 controls.settings.leftp2 = {"key", {"j"}}

@@ -10,6 +10,8 @@ function love.load()
 	
 	vsync = true
 	
+	hme = true
+	
 	autosize()
 	
 	suggestedscale = math.min(math.floor((desktopheight-50)/144), math.floor((desktopwidth-10)/160))
@@ -105,6 +107,8 @@ function love.load()
 	highscorebeep = love.audio.newSource( "sounds/highscorebeep.ogg", "stream")
 	portalenter = love.audio.newSource("sounds/portalenter.ogg", "stream")
 	portalfizzle = love.audio.newSource("sounds/portalfizzle.ogg", "stream")
+	portal1open = love.audio.newSource("sounds/portal1open.ogg", "stream")
+	portal2open = love.audio.newSource("sounds/portal2open.ogg", "stream")
 	newlevel = love.audio.newSource( "sounds/newlevel.ogg", "stream")
 	newlevel:setVolume( 0.6 )
 	
@@ -223,7 +227,10 @@ function loadimages()
 	gamebackgroundcutoff = newPaddedImage("graphics/gamebackgroundgamea.png")
 	gamebackgroundcutoffportalless = newPaddedImage("graphics/gamebackgroundgameaportalless.png")
 	gamebackgroundmulti = newPaddedImage("graphics/gamebackgroundmulti.png")
-	multiresults = newPaddedImage("graphics/multiresults.png")
+	gamebackgroundmultiportalless = newPaddedImage("graphics/gamebackgroundmultiportalless.png")
+	multiresultsportalless = newPaddedImage("graphics/multiresultsportalless.png")
+	multiresultsmario = newPaddedImage("graphics/multiresultsmario.png")
+	multiresultsluigi = newPaddedImage("graphics/multiresultsluigi.png")
 	
 	number1 = newPaddedImage("graphics/versus/number1.png")
 	number2 = newPaddedImage("graphics/versus/number2.png")
@@ -292,7 +299,10 @@ function loadimages()
 	gamebackgroundcutoff:setFilter( "nearest", "nearest" )
 	gamebackgroundcutoffportalless:setFilter( "nearest", "nearest" )
 	gamebackgroundmulti:setFilter( "nearest", "nearest" )
-	multiresults:setFilter( "nearest", "nearest" )
+	gamebackgroundmultiportalless:setFilter( "nearest", "nearest" )
+	multiresultsportalless:setFilter( "nearest", "nearest" )
+	multiresultsmario:setFilter( "nearest", "nearest" )
+	multiresultsluigi:setFilter( "nearest", "nearest" )
 	number1:setFilter( "nearest", "nearest" )
 	number2:setFilter( "nearest", "nearest" )
 	number3:setFilter( "nearest", "nearest" )
@@ -504,9 +514,11 @@ function changevolume(i)
 	gameover2:setVolume( i )
 	pausesound:setVolume( i )
 	highscorebeep:setVolume( i )
-	newlevel:setVolume( 0.6*i )
 	portalenter:setVolume( i )
 	portalfizzle:setVolume( i )
+	portal1open:setVolume( i )
+	portal2open:setVolume( i )
+	newlevel:setVolume( 0.6*i )
 end
 
 function loadconfig()
@@ -1098,11 +1110,21 @@ function love.keypressed( key, unicode )
 				if musicno < 4 then
 					love.audio.pause(music[musicno])
 				end
-				love.audio.stop(pausesound)
-				love.audio.play(pausesound)
+				if hm then
+					love.audio.stop(pausesound)
+					love.audio.play(pausesound)
+					love.audio.stop(portalfizzle)
+					love.audio.play(portalfizzle)
+				end
 			else
 				if musicno < 4 then
 					love.audio.resume(music[musicno])
+				end
+				if hm then
+					love.audio.stop(portal1open)
+					love.audio.play(portal1open)
+					love.audio.stop(portal2open)
+					love.audio.play(portal2open)
 				end
 			end
 		end
@@ -1110,6 +1132,17 @@ function love.keypressed( key, unicode )
 			if controls.check("escape", key) then
 				oldtime = love.timer.getTime()
 				gamestate = "menu"
+				if not pause then
+					if hm then
+						love.audio.stop(portalfizzle)
+						love.audio.play(portalfizzle)
+					end
+				else
+					if musicno < 4 then
+						love.audio.stop(music[musicno])
+						love.audio.play(music[musicno])
+					end
+				end
 			end
 			
 			if pause == false and (cuttingtimer == lineclearduration or gamestate == "gameB") then
@@ -1200,4 +1233,11 @@ function love.keypressed( key, unicode )
 			failed_checkhighscores()
 		end
 	end
+	if gamestate == "gameA" or gamestate == "gameB" or gamestate == "gameBmulti" or gamestate == "gameBmulti_results" then
+		if pause == false and (cuttingtimer == lineclearduration) then
+			if controls.check("hm", key) then hmA() end
+		end
+	end
 end
+
+function hmA()if hme then hm=not hm;if not hm then love.audio.stop(portalfizzle);love.audio.play(portalfizzle);if not wallshapes[2]then wallshapes[2]=love.physics.newPolygonShape(wallbodies,24,640,24,672,352,672,352,640);wallshapes[2]:setData({"ground"})end;if not wallshapes[3]then wallshapes[3]=love.physics.newPolygonShape(wallbodies,-8,-96,384,-96,384,-64,-8,-64);wallshapes[3]:setData({"ceiling"})end else love.audio.stop(portal1open);love.audio.stop(portal2open);love.audio.play(portal2open);love.audio.play(portal2open);if wallshapes[2]then wallshapes[2]:destroy();wallshapes[2]=nil end;if wallshapes[3]then wallshapes[3]:destroy();wallshapes[3]=nil end end end end
