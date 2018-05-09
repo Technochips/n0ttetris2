@@ -15,10 +15,10 @@ function failed_draw()
 	end
 	
 	if gameno == 1 then
-		love.graphics.draw(gamebackgroundcutoff, 0, 0, 0, scale)
+		love.graphics.draw(gamebackgroundcutoffportalless, 0, 0, 0, scale)
 		love.graphics.draw(gameovercutoff, 14*scale, 0, 0, scale)
 	else
-		love.graphics.draw(gamebackground, 0, 0, 0, scale)
+		love.graphics.draw(gamebackgroundportalless, 0, 0, 0, scale)
 		love.graphics.draw(gameover, 16*scale, 0, 0, scale)
 	end
 	

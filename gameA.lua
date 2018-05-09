@@ -139,7 +139,11 @@ function gameA_draw()
 	end
 	
 	--background--
-	love.graphics.draw(gamebackgroundcutoff, 0, 0, 0, scale, scale)
+	if gamestate ~= "failingA" then
+		love.graphics.draw(gamebackgroundcutoff, 0, 0, 0, scale, scale)
+	else
+		love.graphics.draw(gamebackgroundcutoffportalless, 0, 0, 0, scale, scale)
+	end
 	---------------
 	--tetrishapes--
 	if cuttingtimer == lineclearduration then
@@ -1169,6 +1173,8 @@ function collideA(a, b, coll) --box2d callback. calls endblock.
 					end
 					love.audio.stop(gameover1)
 					love.audio.play(gameover1)
+					love.audio.stop(portalfizzle)
+					love.audio.play(portalfizzle)
 				
 					if wallshapes[2] then
 						wallshapes[2]:destroy()

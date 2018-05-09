@@ -10,10 +10,10 @@ function menu_load()
 	"                    ",
 	" C2011 stabyourself ",
 	"       dot net.     ",
-	"                    ",
-	"                    ",
+	"this shitty ass mod ",
+	"   was created by   ",
+	"    technochips!good",
 	"all rights reserved.",
-	"                    ",
 	"  original concept, ",
 	" design and program ",
 	"by alexey pazhitnov#"
