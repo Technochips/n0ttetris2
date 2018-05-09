@@ -8,9 +8,9 @@ function love.load()
 	require "failed"
 	require "rocket"
 	
-	vsync = true
+	math.randomseed(os.time())
 	
-	hme = true
+	vsync = true
 	
 	autosize()
 	
@@ -231,6 +231,7 @@ function loadimages()
 	multiresultsportalless = newPaddedImage("graphics/multiresultsportalless.png")
 	multiresultsmario = newPaddedImage("graphics/multiresultsmario.png")
 	multiresultsluigi = newPaddedImage("graphics/multiresultsluigi.png")
+	multiresultsoverlay = newPaddedImage("graphics/multiresultsoverlay.png")
 	
 	number1 = newPaddedImage("graphics/versus/number1.png")
 	number2 = newPaddedImage("graphics/versus/number2.png")
@@ -303,6 +304,7 @@ function loadimages()
 	multiresultsportalless:setFilter( "nearest", "nearest" )
 	multiresultsmario:setFilter( "nearest", "nearest" )
 	multiresultsluigi:setFilter( "nearest", "nearest" )
+	multiresultsoverlay:setFilter( "nearest", "nearest" )
 	number1:setFilter( "nearest", "nearest" )
 	number2:setFilter( "nearest", "nearest" )
 	number3:setFilter( "nearest", "nearest" )
@@ -1156,6 +1158,7 @@ function love.keypressed( key, unicode )
 					love.audio.stop(blockturn)
 					love.audio.play(blockturn)
 				end
+				if controls.check("hm", key) then hmA() end
 			end
 		end
 	elseif gamestate == "gameBmulti" and gamestarted == false then
@@ -1182,6 +1185,7 @@ function love.keypressed( key, unicode )
 			love.audio.stop(blockturn)
 			love.audio.play(blockturn)
 		end
+		if controls.check("hm", key) then hmB() end
 		
 	elseif gamestate == "gameBmulti_results" then
 		if controls.check("return", key) or controls.check("escape", key) then
@@ -1194,6 +1198,7 @@ function love.keypressed( key, unicode )
 			end
 			gamestate = "multimenu"
 		end
+		if controls.check("hm", key) then hmB() end
 		
 	elseif gamestate == "failed" then
 		if controls.check("return", key) or controls.check("escape", key) then 
@@ -1231,11 +1236,6 @@ function love.keypressed( key, unicode )
 			love.audio.stop(musicrocket1to3)
 			love.audio.stop(musicrocket4)
 			failed_checkhighscores()
-		end
-	end
-	if gamestate == "gameA" or gamestate == "gameB" or gamestate == "gameBmulti" or gamestate == "gameBmulti_results" then
-		if pause == false and (cuttingtimer == lineclearduration) then
-			if controls.check("hm", key) then hmA() end
 		end
 	end
 end

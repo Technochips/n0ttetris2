@@ -8,6 +8,8 @@ function gameBmulti_load()
 	
 	beeped = {false, false, false}
 	
+	hm = true
+	
 	--figure out the multiplayer scale
 	mpscale = scale
 	while 274*mpscale > desktopwidth do
@@ -86,8 +88,8 @@ function gameBmulti_load()
 	wallshapesp1[1]:setCategory( 2 )
 	wallshapesp1[1]:setFriction(0.0001)
 	
-	wallshapesp1[2] = love.physics.newPolygonShape( wallbodiesp1,196,640, 196,672, 516,672, 516,640)
-	wallshapesp1[2]:setData("groundp1")
+	--[[wallshapesp1[2] = love.physics.newPolygonShape( wallbodiesp1,196,640, 196,672, 516,672, 516,640)
+	wallshapesp1[2]:setData("groundp1")]]
 	
 	--WALLS P2--
 	wallbodiesp2 = love.physics.newBody(world, 32, -64, 0, 0)
@@ -101,8 +103,8 @@ function gameBmulti_load()
 	wallshapesp2[1]:setData("rightp2")
 	wallshapesp2[1]:setFriction(0.0001)
 	
-	wallshapesp2[2] = love.physics.newPolygonShape( wallbodiesp2,516,640, 516,672, 836,672, 836,640)
-	wallshapesp2[2]:setData("groundp2")
+	--[[wallshapesp2[2] = love.physics.newPolygonShape( wallbodiesp2,516,640, 516,672, 836,672, 836,640)
+	wallshapesp2[2]:setData("groundp2")]]
 	-----------	
 	world:setCallbacks(collideBmulti)
 	-----------
@@ -110,6 +112,11 @@ function gameBmulti_load()
 	randomtable[1] = math.random(7)
 	starttimer = love.timer.getTime()
 	--first piece! hooray.
+	
+	ey = 0
+	eyt = 3603
+	eya = false
+	bthings = {}
 end
 
 function gameBmulti_draw()
@@ -120,10 +127,37 @@ function gameBmulti_draw()
 	end
 
 	--background--
-	if gamestate ~= "gameBmulti_results" then
-		love.graphics.draw(gamebackgroundmulti, 0, 0, 0, mpscale)
-	else
-		love.graphics.draw(multiresults, 0, 0, 0, mpscale)
+	if gamestate == "gameBmulti" or gamestate == "failingBmulti" or gamestate == "failedBmulti" then
+		if hm and gamestate ~= "failedBmulti"then
+			love.graphics.draw(gamebackgroundmulti, 0, 0, 0, mpscale)
+		else
+			love.graphics.draw(gamebackgroundmultiportalless, 0, 0, 0, mpscale)
+		end
+		if eya then
+			local r, g, b, a = love.graphics.getColor()
+			love.graphics.setColor(0, 0, 0)
+			love.graphics.rectangle("fill", 21*mpscale, 53*mpscale, 2*mpscale, 3*mpscale)
+			love.graphics.rectangle("fill", 25*mpscale, 53*mpscale, 2*mpscale, 3*mpscale)
+			love.graphics.rectangle("fill", 247*mpscale, 53*mpscale, 2*mpscale, 2*mpscale)
+			love.graphics.rectangle("fill", 251*mpscale, 53*mpscale, 2*mpscale, 2*mpscale)
+			love.graphics.setColor(255, 0, 0)
+			for i, v in pairs(bthings) do
+				love.graphics.rectangle("fill", v[1]*mpscale, v[2]*mpscale, mpscale, mpscale)
+			end
+			love.graphics.setColor(r,g,b,a)
+		end
+	elseif gamestate == "gameBmulti_results" then
+		if hm then
+			if winner == 1 then
+				love.graphics.draw(multiresultsmario, 0, 0, 0, mpscale)
+			elseif winner == 2 then
+				love.graphics.draw(multiresultsluigi, 0, 0, 0, mpscale)
+			else
+				love.graphics.draw(multiresultsportalless, 0, 0, 0, mpscale)
+			end
+		else
+			love.graphics.draw(multiresultsportalless, 0, 0, 0, mpscale)
+		end
 	end
 	---------------
 	if gamestarted == false then
@@ -150,7 +184,13 @@ function gameBmulti_draw()
 			end
 		end
 		
-		love.graphics.draw( tetriimagesp1[i], v:getX()*physicsmpscale, v:getY()*physicsmpscale, v:getAngle(), 1, 1, piececenter[tetrikindp1[i]][1]*mpscale, piececenter[tetrikindp1[i]][2]*mpscale)
+		if gamestate == "gameBmulti" or gamestate == "failingBmulti" or gamestate == "failedBmulti" then
+			love.graphics.draw( tetriimagesp1[i], v:getX()*physicsmpscale, v:getY()*physicsmpscale, v:getAngle(), 1, 1, piececenter[tetrikindp1[i]][1]*mpscale, piececenter[tetrikindp1[i]][2]*mpscale)
+			if hm then
+				love.graphics.draw( tetriimagesp1[i], v:getX()*physicsmpscale, (v:getY()*physicsmpscale)+(128*scale), v:getAngle(), 1, 1, piececenter[tetrikindp1[i]][1]*mpscale, piececenter[tetrikindp1[i]][2]*mpscale)
+				love.graphics.draw( tetriimagesp1[i], v:getX()*physicsmpscale, (v:getY()*physicsmpscale)-(128*scale), v:getAngle(), 1, 1, piececenter[tetrikindp1[i]][1]*mpscale, piececenter[tetrikindp1[i]][2]*mpscale)
+			end
+		end
 	end
 	
 	if p1fail == false and nextpiecep1 then
@@ -169,7 +209,14 @@ function gameBmulti_draw()
 				love.graphics.setColor(unpack(p2color))
 			end
 		end
-		love.graphics.draw( tetriimagesp2[i], v:getX()*physicsmpscale, v:getY()*physicsmpscale, v:getAngle(), 1, 1, piececenter[tetrikindp2[i]][1]*mpscale, piececenter[tetrikindp2[i]][2]*mpscale)
+		
+		if gamestate == "gameBmulti" or gamestate == "failingBmulti" or gamestate == "failedBmulti" then
+			love.graphics.draw( tetriimagesp2[i], v:getX()*physicsmpscale, v:getY()*physicsmpscale, v:getAngle(), 1, 1, piececenter[tetrikindp2[i]][1]*mpscale, piececenter[tetrikindp2[i]][2]*mpscale)
+			if hm then
+				love.graphics.draw( tetriimagesp2[i], v:getX()*physicsmpscale, (v:getY()*physicsmpscale)+(128*scale), v:getAngle(), 1, 1, piececenter[tetrikindp2[i]][1]*mpscale, piececenter[tetrikindp2[i]][2]*mpscale)
+				love.graphics.draw( tetriimagesp2[i], v:getX()*physicsmpscale, (v:getY()*physicsmpscale)-(128*scale), v:getAngle(), 1, 1, piececenter[tetrikindp2[i]][1]*mpscale, piececenter[tetrikindp2[i]][2]*mpscale)
+			end
+		end
 	end
 	----------------	
 	love.graphics.setColor(255, 255, 255)
@@ -237,8 +284,16 @@ function gameBmulti_draw()
 			--mario
 			if jumpframe == false then
 				love.graphics.draw( marioidle, mariobody:getX()*physicsmpscale, mariobody:getY()*physicsmpscale, mariobody:getAngle(), mpscale, mpscale, 12, 13.5)
+				if hm then
+					love.graphics.draw( marioidle, mariobody:getX()*physicsmpscale, (mariobody:getY()*physicsmpscale)+(80*mpscale), mariobody:getAngle(), mpscale, mpscale, 12, 13.5)
+					love.graphics.draw( marioidle, mariobody:getX()*physicsmpscale, (mariobody:getY()*physicsmpscale)-(80*mpscale), mariobody:getAngle(), mpscale, mpscale, 12, 13.5)
+				end
 			else
 				love.graphics.draw( mariojump, mariobody:getX()*physicsmpscale, mariobody:getY()*physicsmpscale, mariobody:getAngle(), mpscale, mpscale, 12, 13.5)
+				if hm then
+					love.graphics.draw( mariojump, mariobody:getX()*physicsmpscale, (mariobody:getY()*physicsmpscale)+(80*mpscale), mariobody:getAngle(), mpscale, mpscale, 12, 13.5)
+					love.graphics.draw( mariojump, mariobody:getX()*physicsmpscale, (mariobody:getY()*physicsmpscale)-(80*mpscale), mariobody:getAngle(), mpscale, mpscale, 12, 13.5)
+				end
 			end
 			
 			--luigi
@@ -257,8 +312,16 @@ function gameBmulti_draw()
 			--luigi
 			if jumpframe == false then
 				love.graphics.draw( luigiidle, luigibody:getX()*physicsmpscale, luigibody:getY()*physicsmpscale, luigibody:getAngle(), mpscale, mpscale, 14, 15.5)
+				if hm then
+					love.graphics.draw( luigiidle, luigibody:getX()*physicsmpscale, (luigibody:getY()*physicsmpscale)+(80*mpscale), luigibody:getAngle(), mpscale, mpscale, 14, 15.5)
+					love.graphics.draw( luigiidle, luigibody:getX()*physicsmpscale, (luigibody:getY()*physicsmpscale)-(80*mpscale), luigibody:getAngle(), mpscale, mpscale, 14, 15.5)
+				end
 			else
 				love.graphics.draw( luigijump, luigibody:getX()*physicsmpscale, luigibody:getY()*physicsmpscale, luigibody:getAngle(), mpscale, mpscale, 14, 15.5)
+				if hm then
+					love.graphics.draw( luigijump, luigibody:getX()*physicsmpscale, (luigibody:getY()*physicsmpscale)+(80*mpscale), luigibody:getAngle(), mpscale, mpscale, 14, 15.5)
+					love.graphics.draw( luigijump, luigibody:getX()*physicsmpscale, (luigibody:getY()*physicsmpscale)-(80*mpscale), luigibody:getAngle(), mpscale, mpscale, 14, 15.5)
+				end
 			end
 			
 			--mario
@@ -287,6 +350,7 @@ function gameBmulti_draw()
 			end
 			
 		end
+		love.graphics.draw(multiresultsoverlay, 0, 0, 0, mpscale)
 	end
 	
 	if fullscreen then
@@ -297,7 +361,33 @@ function gameBmulti_draw()
 end
 	
 function gameBmulti_update(dt)
-
+	if not eya then if gamestate=="gameBmulti" then ey=ey+dt;if ey>=eyt then print("mario: mamamia wtf this-a sure make-a me want-a to kill-a my-a self right-a now");eya=true;love.audio.stop(gameover1);love.audio.play(gameover1);end;end;else local t={{21,22,53,55},{25,26,53,55},{247,248,53,54},{250,251,53,54}};local r=math.random();local c=math.random(1,4);if r>0.9 then table.insert(bthings,{math.random(t[c][1],t[c][2]),math.random(t[c][3],t[c][4]),(math.random()-0.5)*200,math.random()*-75});love.audio.stop(blockmove);love.audio.play(blockmove);end;end;for i,v in pairs(bthings)do v[3]=(v[3]/0.009)*dt;v[4]=v[4]+200*dt;v[1]=v[1]+v[3]*dt;v[2]=v[2]+v[4]*dt;if v[2]>128 then table.remove(bthings,i);end;end -- i sure wonder what the fuck this line does
+	--PORTAL TELEPORTAION
+	if hm and (gamestate == "gameBmulti" or gamestate == "failingBmulti")then
+		for i,v in pairs(tetribodiesp1) do
+			if v:getY() > 512 then
+				v:setY(v:getY() - 512)
+				love.audio.stop(portalenter)
+				love.audio.play(portalenter)
+			elseif v:getY() < 0 then
+				v:setY(v:getY() + 512)
+				love.audio.stop(portalenter)
+				love.audio.play(portalenter)
+			end
+		end
+		for i,v in pairs(tetribodiesp2) do
+			if v:getY() > 512 then
+				v:setY(v:getY() - 512)
+				love.audio.stop(portalenter)
+				love.audio.play(portalenter)
+			elseif v:getY() < 0 then
+				v:setY(v:getY() + 512)
+				love.audio.stop(portalenter)
+				love.audio.play(portalenter)
+			end
+		end
+	end
+	
 	--NEXTPIECE ROTATION (rotating allday erryday)
 	nextpiecerot = nextpiecerot + nextpiecerotspeed*dt
 	while nextpiecerot > math.pi*2 do
@@ -433,8 +523,10 @@ function gameBmulti_update(dt)
 			love.audio.play(musicresults)
 			
 			resultsfloorbody = love.physics.newBody(world, 32, -64, 0, 0)
-			resultsfloorshape = love.physics.newPolygonShape( resultsfloorbody,196,448, 196,480, 836,480, 836,448)
-			resultsfloorshape:setData("resultsfloor")
+			if not hm then
+				resultsfloorshape = love.physics.newPolygonShape( resultsfloorbody,196,448, 196,480, 836,480, 836,448)
+				resultsfloorshape:setData("resultsfloor")
+			end
 			
 			if winner == 1 then
 				mariobody = love.physics.newBody(world, 388, 320, 0, 0)
@@ -464,18 +556,42 @@ function gameBmulti_update(dt)
 			jumpframe = true
 		end
 	elseif gamestate == "gameBmulti_results" then
-		jumptimepassed = love.timer.getTime() - jumptimer
-		if jumptimepassed > 2 then
-			jumptimer = love.timer.getTime()
-			jumpframe = true
+		if not hm then
+			jumptimepassed = love.timer.getTime() - jumptimer
+			if jumptimepassed > 2 then
+				jumptimer = love.timer.getTime()
+				jumpframe = true
+				if winner == 1 then
+					mariobody:setY(mariobody:getY()-1)
+					x, y = mariobody:getLinearVelocity( )
+					mariobody:setLinearVelocity(x, -300)
+				elseif winner == 2 then
+					luigibody:setY(luigibody:getY()-1)
+					x, y = luigibody:getLinearVelocity( )
+					luigibody:setLinearVelocity(x, -300)
+				end
+			end
+		else
 			if winner == 1 then
-				mariobody:setY(mariobody:getY()-1)
-				x, y = mariobody:getLinearVelocity( )
-				mariobody:setLinearVelocity(x, -300)
+				if mariobody:getY() > 360 then
+					mariobody:setY(mariobody:getY() - 360)
+					love.audio.stop(portalenter)
+					love.audio.play(portalenter)
+				elseif mariobody:getY() < 0 then
+					mariobody:setY(mariobody:getY() + 360)
+					love.audio.stop(portalenter)
+					love.audio.play(portalenter)
+				end
 			elseif winner == 2 then
-				luigibody:setY(luigibody:getY()-1)
-				x, y = luigibody:getLinearVelocity( )
-				luigibody:setLinearVelocity(x, -300)
+				if luigibody:getY() > 360 then
+					luigibody:setY(luigibody:getY() - 360)
+					love.audio.stop(portalenter)
+					love.audio.play(portalenter)
+				elseif luigibody:getY() < 0 then
+					luigibody:setY(luigibody:getY() + 360)
+					love.audio.stop(portalenter)
+					love.audio.play(portalenter)
+				end
 			end
 		end
 		
@@ -792,3 +908,5 @@ function endgame()
 		p2wins = math.mod(p2wins, 100)
 	end
 end
+
+function hmB() if hme then hm=not hm;if not hm then love.audio.stop(portalfizzle);love.audio.play(portalfizzle);if gamestate=="gameBmulti_results" then if not resultsfloorshape then resultsfloorshape = love.physics.newPolygonShape(resultsfloorbody,196,448,196,480,836,480,836,448);resultsfloorshape:setData("resultsfloor");end;else if not wallshapesp1[2]then wallshapesp1[2]=love.physics.newPolygonShape(wallbodiesp1,196,640,196,672,516,672,516,640);wallshapesp1[2]:setData("groundp1");end;if not wallshapesp2[2]then wallshapesp2[2]=love.physics.newPolygonShape(wallbodiesp2,516,640,516,672,836,672,836,640);wallshapesp2[2]:setData("groundp2");end;end;else love.audio.stop(portal1open);love.audio.play(portal1open);love.audio.stop(portal2open);love.audio.play(portal2open);if gamestate=="gameBmulti_results" then if resultsfloorshape then resultsfloorshape:destroy();resultsfloorshape=nil;end;else if wallshapesp1[2]then wallshapesp1[2]:destroy();wallshapesp1[2]=nil;end;if wallshapesp2[2]then wallshapesp2[2]:destroy();wallshapesp2[2]=nil;end;end;end;end;end
